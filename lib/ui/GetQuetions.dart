@@ -1,13 +1,17 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:collection';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import './ListViewSample.dart';
 
 class GetQuestions extends StatefulWidget {
+
   final testId;
-  GetQuestions({Key key,this.testId}): super (key:key);
+  final courseId;
+  final techId;
+  GetQuestions({Key key,this.testId,this.courseId,this.techId}): super (key:key);
 
 
 
@@ -22,6 +26,11 @@ class _QuestionView extends State<GetQuestions> {
   String value;
   int index=0;
   List<String> attempted ;
+  List<String> resultsOfQns;
+  int noOfRightAns=0;
+  String title='Questions';
+  bool showResultView=false;
+  bool examResult=false;
 
 
   void handleRadioValueChanged(String value){
@@ -41,34 +50,36 @@ class _QuestionView extends State<GetQuestions> {
   Widget build(BuildContext context) {
     return new Scaffold(
       appBar: new AppBar(
-        title: Text('Questions'),
+        title: Text(title),
       ),
-      body: createView(widget.testId),
+      body: createView(widget.testId,widget.techId,widget.courseId),
     );
   }
 
-  Future<Map> loadQuestions(testId) async {
+  Future<Map> loadQuestions(testId,techId,courseId) async {
     var request =new Map();
     request['action']='get_questions';
     request['test_id']='$testId';
-    
+    request['course_id']='$courseId';
+    request['tech_id']='$techId';
     final response = await http.post("http://androindian.com/apps/quiz/api.php",body: json.encode(request));
     print(json.decode(response.body));
     return json.decode(response.body);
   }
 
-  Widget createView(testId) {
+  Widget createView(testId, techId, courseId) {
     if(data==null) {
-      loadQuestions(testId).then((onResult) {
+      loadQuestions(testId,techId,courseId).then((onResult) {
         setState(() {
           data = onResult;
           attempted=new List(data['data'].length);
+          resultsOfQns=new List(data['data'].length);
         });
         print(data);
       });
 
     }else if(data!=null){
-      return createQuestionView(data);
+      return showResultView?resultView():createQuestionView(data);
 
     }
     return  dialog();
@@ -124,31 +135,21 @@ class _QuestionView extends State<GetQuestions> {
               child: new Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: <Widget>[
+                  previousWidget(),
+
+
                   new Padding(
                     padding: const EdgeInsets.all(32.0),
-                    child: new GestureDetector(
-                      onTap: () => previous(),
-                      child: new CircleAvatar(
-                        backgroundColor: Colors.green,
-                        child: new Icon(
-                          Icons.arrow_back
-                        ),
-                      ),
-                    ),
-                  ),
-                  new Padding(
-                    padding: const EdgeInsets.all(32.0),
-                    child: new GestureDetector(
+                    child: new InkWell(
+                      highlightColor: Colors.black,
+                      splashColor: Colors.red,
                       onTap:() => next(),
                       child: nextOrResult(),
                     ),
-
                   )
                 ],
               ),
             )
-
-
           ],
         ),
       ) ,
@@ -181,19 +182,133 @@ class _QuestionView extends State<GetQuestions> {
 
   Widget nextOrResult() {
     if(index==data['data'].length-1){
-      return new RaisedButton(onPressed: () => print(index),
+      return new RaisedButton(onPressed: () => showResult(),
         color: Colors.green,
         child:  Text("Result",style: new TextStyle(color: Colors.white),),
       );
     }
     return new CircleAvatar(
+        radius: 30.0,
         backgroundColor: Colors.green,
         child: new Icon(
-          Icons.arrow_forward
+          Icons.arrow_forward,
+          color: Colors.white,
+          size: 32.0,
         )
     );
 
   }
 
+  showResult() {
+    attempted[index]=groupValue;
+    for (int i=0;i<data['data'].length;i++){
+      resultsOfQns[i]=data['data'][i]['ANS'];
+      print('resultsOfQns $resultsOfQns');
+      print('attempted $attempted');
+      if(attempted[i]!=null&&attempted[i]==resultsOfQns[i]){
+        ++noOfRightAns;
+      }
+    }
+    print('result $noOfRightAns');
+
+    setState(() {
+      var result=resultsOfQns.length ~/ 2;
+      print(result);
+      /*examResult=true;*/
+      if(noOfRightAns >= result){
+        examResult=true;
+      }
+      showResultView=true;
+      title='Results';
+    });
+  }
+
+  Widget previousOrNone() {
+    return new Column(
+      children: <Widget>[
+        index!=0?
+        new CircleAvatar(
+          radius: 30.0,
+          backgroundColor: Colors.green,
+          child: new Icon(
+            Icons.arrow_back,
+            color: Colors.white,
+            size: 32.0,
+          ),
+        ):null
+      ].where((Object o) => o!=null).toList(),
+    );
+   /* if(index==0){
+      return new Container();
+    }
+    return new CircleAvatar(
+      radius: 30.0,
+      backgroundColor: Colors.green,
+      child: new Icon(
+        Icons.arrow_back,
+        color: Colors.white,
+        size: 32.0,
+      ),
+    );*/
+  }
+
+  Widget previousWidget() {
+    return new Padding(
+      padding: new EdgeInsets.all(index==0?0.0:32.0),
+      child: new InkWell(
+        highlightColor: Colors.black,
+        splashColor: Colors.red,
+        onTap: () => previous(),
+        child:previousOrNone(),
+      ),
+    );
+  }
+
+  Widget resultView() {
+    bool pass=examResult;
+
+
+    return new Column(
+      children: <Widget>[
+        new Center(
+          child: new Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              new Padding(padding: const EdgeInsets.all(32.0),
+                child: new CircleAvatar(
+                  radius: 40.0,
+                  backgroundColor: pass?Colors.green:Colors.red,
+                  child: new Icon(pass?Icons.done_all:Icons.cancel,
+                    color: Colors.white,
+                    size: 48.0,
+                  ),
+                ),
+              ),
+              new Padding(padding: const EdgeInsets.all(32.0),
+                child: pass? new Text("You are succeded in the exam and sucessfully completed the level  good luck for next level",
+                  style: new TextStyle(
+                    fontSize: 18.0
+                  ),
+                ):new Text("You are failed in the exam try again...",
+                  style: new TextStyle(
+                    fontSize: 18.0
+                  ),
+                ),
+              ),
+              new Text("Number Of Questions : ${resultsOfQns.length}"+"\n"+"Number Of Questions Answered : ${attempted.length}"+'\n'+
+                  'Number Of Questions Correctly Answered : $noOfRightAns'+'\n'+'Numner Of Questions Went Wrong : ${resultsOfQns.length-noOfRightAns}',
+                style: new TextStyle(
+                  fontSize: 16.0,
+                ),
+              ),
+
+            ],
+          ),
+        )
+      ],
+    );
+  }
 
 }
+
+

@@ -198,24 +198,41 @@ class RegistrationViewState extends State<RegistrationView> {
               padding: const EdgeInsets.all(8.0),
               child: new RaisedButton(
                 splashColor: Colors.white,
-                highlightColor: Colors.orange,
                 padding: const EdgeInsets.all(16.0),
                 shape: new RoundedRectangleBorder(borderRadius: new BorderRadius.all(new Radius.circular(8.0))),
                 color: Colors.red,
                 onPressed: () async {
                     /*goToLogin();*/
-                    goToListView();
-                   /* iniConnecctivity().then((value){
+                   /* await new Future.delayed(const Duration(seconds: 10));*/
+                   // goToListView();
+                    iniConnecctivity().then((value){
                       if(value != 'ConnectivityResult.none'){
-                        showDialog(context: context,builder: (BuildContext context) => widget._dialog() ,barrierDismissible: false);
+                        showDialog(context: context,builder: (BuildContext context) => dialog() ,barrierDismissible: false);
                         registerUser(context,_usernameController.text,_mobileNumberController.text,_emailController.text,_passwordController.text);
                       }else{
-                        showDialog(context: context,builder: (BuildContext context) => _alertDialog(context,"No Internet"));
+                        showDialog(context: context,builder: (BuildContext context) => alertDialog(context,"No Internet"));
                       }
-                    });*/
+                    });
 
                 },
                 child: const Text(Utils.REGISTER,style: const TextStyle(
+                    color: Colors.white,
+                    fontStyle: FontStyle.normal
+                ),),
+              ),
+            ),
+            new Container(
+              width: 380.0,
+              padding: const EdgeInsets.all(8.0),
+              child: new RaisedButton(
+                splashColor: Colors.white,
+                padding: const EdgeInsets.all(16.0),
+                shape: new RoundedRectangleBorder(borderRadius: new BorderRadius.all(new Radius.circular(8.0))),
+                color: Colors.red,
+                onPressed: () async {
+                  goToLogin();
+                },
+                child: const Text(Utils.GO_LOGIN,style: const TextStyle(
                     color: Colors.white,
                     fontStyle: FontStyle.normal
                 ),),
@@ -252,6 +269,7 @@ class RegistrationViewState extends State<RegistrationView> {
 
 
 
+/*
 Widget _alertDialog(BuildContext context, String result) {
   return new AlertDialog(
     title: Text("Response From Server"),
@@ -265,9 +283,10 @@ Widget _alertDialog(BuildContext context, String result) {
       new FlatButton(onPressed: () {
         Navigator.of(context).pop();
       },
-          child: new Text("Cancel")
+          child: new Text("Ok")
       ),
-      new FlatButton(onPressed: () {
+      */
+/*new FlatButton(onPressed: () {
         Navigator.of(context).pop();
 
         Navigator.of(context).push(new MaterialPageRoute(
@@ -275,8 +294,9 @@ Widget _alertDialog(BuildContext context, String result) {
               title: "Login",)));
       },
           child: new Text("Login")
-      )
+      )*//*
+
 
     ],
   );
-}
+}*/

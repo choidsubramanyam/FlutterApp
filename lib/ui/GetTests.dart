@@ -9,7 +9,8 @@ import 'package:http/http.dart' as http;
 
   class GetTestLists  extends StatefulWidget {
   final techId;
-  GetTestLists({Key key,this.techId}) :super (key:key);
+  final courseId;
+  GetTestLists({Key key,this.techId,this.courseId}) :super (key:key);
 
   @override
   _GetTestListState createState() => _GetTestListState();
@@ -21,13 +22,13 @@ class _GetTestListState extends State<GetTestLists> {
   @override
   Widget build(BuildContext context) {
     var futureBuilder= new FutureBuilder(
-        future:  getTests(widget.techId),
+        future:  getTests(widget.techId,widget.courseId),
         builder: (BuildContext context,AsyncSnapshot snapshot){
           // ignore: missing_enum_constant_in_switch
           switch(snapshot.connectionState){
             case ConnectionState.waiting : return dialog();
             case ConnectionState.none : return Text("No Internet");
-            case ConnectionState.done : return createTechList(context,snapshot);
+            case ConnectionState.done : return createTechList(context,snapshot,widget);
           }
         }
     ) ;
@@ -41,7 +42,7 @@ class _GetTestListState extends State<GetTestLists> {
   }
 }
 
-Widget createTechList(BuildContext context, AsyncSnapshot snapshot) {
+Widget createTechList(BuildContext context, AsyncSnapshot snapshot, GetTestLists widget) {
   if(snapshot.hasData){
     Map data= snapshot.data;
 
@@ -56,7 +57,7 @@ Widget createTechList(BuildContext context, AsyncSnapshot snapshot) {
             }
             return new ListTile(
               title: new Text('${data['data'][index ~/2]['TECH_NAME']}',style: new TextStyle(fontStyle: FontStyle.italic,fontSize: 18.0)),
-              onTap: () =>Navigator.of(context).push(new MaterialPageRoute(builder:(BuildContext context) =>new GetQuestions(testId: '${data['data'][index ~/2]['TEST_ID']}'))),
+              onTap: () =>Navigator.of(context).push(new MaterialPageRoute(builder:(BuildContext context) =>new GetQuestions(testId: '${data['data'][index ~/2]['TEST_ID']}',techId: widget.techId,courseId: widget.courseId,))),
               leading: new CircleAvatar(
 
                 backgroundColor: Colors.red,
@@ -72,6 +73,7 @@ Widget createTechList(BuildContext context, AsyncSnapshot snapshot) {
 
 Widget createfab(String data, int index) {
 
+
     print('0 ${data.substring(0,1)}');
     print('1 ${data.substring(data.length-1)}');
   return new Text('${data.substring(0,1)}'+'${data.substring(data.length-1)}',style:  new TextStyle(
@@ -79,10 +81,11 @@ Widget createfab(String data, int index) {
   ),);
 }
 
-Future<Map> getTests(techId) async{
+Future<Map> getTests(techId,courseId) async{
   var request = new Map();
   request['action']='get_tests';
   request['tech_id']='$techId';
+  request['course_id']='$courseId';
   final response = await http.post("http://androindian.com/apps/quiz/api.php",body :json.encode(request));
   print(response.body);
   return json.decode(response.body);

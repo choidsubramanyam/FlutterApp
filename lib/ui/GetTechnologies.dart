@@ -52,7 +52,7 @@ Widget createTechList(BuildContext context, AsyncSnapshot snapshot) {
           }
           return new ListTile(
             title: new Text('${data['data'][index ~/2]['TECH_NAME']}',style: new TextStyle(fontStyle: FontStyle.italic,fontSize: 18.0)),
-            onTap: () => Navigator.of(context).push(new MaterialPageRoute(builder:(BuildContext context) => new GetTestLists(techId:'${data['data'][index ~/2]['TEC_ID']}' ) ) ),
+            onTap: () => Navigator.of(context).push(new MaterialPageRoute(builder:(BuildContext context) => new GetTestLists(techId:'${data['data'][index ~/2]['TEC_ID']}' ,courseId: '${data['data'][index ~/2]['COURSE_ID']}',) ) ),
             leading: new CircleAvatar(
               radius: 30.0,
               backgroundColor: Colors.red,
@@ -70,6 +70,7 @@ Widget createTechList(BuildContext context, AsyncSnapshot snapshot) {
 Future<Map> getTechnologies() async {
   var request =new Map();
   request['action'] ='get_technologies';
+  request['course_id']="1";
   final response = await http.post("http://androindian.com/apps/quiz/api.php",body: json.encode(request));
   print(json.decode(response.body));
   return json.decode(response.body);

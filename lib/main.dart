@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:firs_flutter_app/ui/GetTechnologies.dart';
 import 'package:flutter/material.dart';
 import 'dart:async';
 import 'package:http/http.dart' as http;
@@ -140,20 +141,20 @@ class _MyHomePageState extends State<MyHomePage> {
                           padding: const EdgeInsets.all(8.0),
                           child: new RaisedButton(
                             padding: const EdgeInsets.all(16.0),
+                            splashColor: Colors.white,
                             shape: new RoundedRectangleBorder(borderRadius: new BorderRadius.all(new Radius.circular(8.0))),
                             color: Colors.red,
                             onPressed: () {
-                              setState(() {
-
-                              });
-                              Navigator.push(context,new MaterialPageRoute(builder: (BuildContext context) => new RegistrationPage()));
-
+                             /* Navigator.push(context,new MaterialPageRoute(builder: (BuildContext context) => new RegistrationPage()));*/
+                              _click(context,usernameController.text,_passwordController.text);
                               /* number=usernameController.text;
                                password=_passwordController.text;
-                               _click(context,number,password);
+
                                showDialog(context: context,builder: (BuildContext context) => _dialog() ,barrierDismissible: false);*/
                             },
-                            child: const Text("Login"),
+                            child: const Text("LOGIN",style: const TextStyle(
+                              color: Colors.white
+                            ),),
                           ),
                         )
                       ],
@@ -170,6 +171,7 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   _click(BuildContext context,String number,String password) async {
+    showDialog(context: context,builder: (BuildContext context) => _dialog() ,barrierDismissible: false);
     Map request=new Map();
     request['action']='login_user';
     request['mobile']='$number';
@@ -178,16 +180,17 @@ class _MyHomePageState extends State<MyHomePage> {
     Map data= await _performLogin(request);
 
    if(data['response']=='success'){
-
-     Navigator.pop(context);
+     goToListView(context);
      print(data);
+   }else{
+     Navigator.pop(context);
    }
 
   }
 
   Future<Map> _performLogin(Map request) async {
-
-     final response= await http.post("http://androindian.com/apps/reminder/api.php",
+    print(request);
+     final response= await http.post("http://androindian.com/apps/quiz/api.php",
       body: json.encode(request)
     );
      print(response.body);
@@ -207,6 +210,10 @@ class _MyHomePageState extends State<MyHomePage> {
   Future<bool> _requestPop() {
 
     return new Future.value(true);
+  }
+
+  goToListView(BuildContext context) {
+    Navigator.of(context).pushReplacement(new MaterialPageRoute(builder: (BuildContext context) => new GetTechnologiesList(title: "Technologies List",)));
   }
 }
 Widget internet(BuildContext context, String status)  {
@@ -261,7 +268,7 @@ registerUser(BuildContext context,String userName, String mobileNumber, String e
   registerObject['mobile']=mobileNumber;
   registerObject['email']=email;
   registerObject['pswrd']=password;
-  registerObject['fcm']="sasyugu";
+  /*registerObject['fcm']="sasyugu";*/
   registerObject['action']='register_user';
   
   Map result= await performRegistration(registerObject);
@@ -269,15 +276,15 @@ registerUser(BuildContext context,String userName, String mobileNumber, String e
   Navigator.pop(context);
   if(result!=null){
     if(result['response']=='success'){
-      showDialog(context: context,builder: (BuildContext context) => _alertDialog(context,result['title']));
+      showDialog(context: context,builder: (BuildContext context) => alertDialog(context,result['user']));
     }else if(result['response']=='failed'){
-      showDialog(context: context,builder: (BuildContext context) => _alertDialog(context,result['title']));
+      showDialog(context: context,builder: (BuildContext context) => alertDialog(context,result['user']));
     }
     
   }
 }
 
-Widget _alertDialog(BuildContext context, result) {
+Widget alertDialog(BuildContext context, result) {
   return new AlertDialog(
     title: Text("Response From Server"),
     content: Text(result.toString()!=null?result.toString().toUpperCase():"No Response",style: new TextStyle(
@@ -287,13 +294,13 @@ Widget _alertDialog(BuildContext context, result) {
     actions: <Widget>[
       new FlatButton(onPressed:() {
         Navigator.of(context).pop();},
-          child: new Text("Cancel")
+          child: new Text("Ok")
       ),
-      new FlatButton(onPressed:() {
+      /*new FlatButton(onPressed:() {
         Navigator.of(context).pop();
         Navigator.of(context).push(new MaterialPageRoute(builder: (BuildContext context) => new MyHomePage(title: "Login",)));},
           child: new Text("Login")
-      )
+      )*/
 
     ],
   );
@@ -302,7 +309,7 @@ Widget _alertDialog(BuildContext context, result) {
 
 Future<Map> performRegistration(Map registerObject) async {
 
-  final response = await http.post("http://androindian.com/apps/reminder/api.php",body: json.encode(registerObject));
+  final response = await http.post("http://androindian.com/apps/quiz/api.php",body: json.encode(registerObject));
   print(response.body);
   return json.decode(response.body);
 }
