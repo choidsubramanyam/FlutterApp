@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
-
+import 'dart:math';
 import 'package:firs_flutter_app/ui/GetQuetions.dart';
 import 'package:firs_flutter_app/ui/ListViewSample.dart';
 import 'package:flutter/material.dart';
@@ -50,7 +50,7 @@ Widget createTechList(BuildContext context, AsyncSnapshot snapshot, GetTestLists
       padding: const EdgeInsets.only(top: 8.0),
       child: new ListView.builder(
           scrollDirection: Axis.vertical,
-          itemCount: data['data'].length * 2,
+          itemCount:data['data']!=null?( data['data'].length * 2):0,
           itemBuilder: (BuildContext context, int index){
             if(index.isOdd){
               return new Divider();
@@ -58,11 +58,7 @@ Widget createTechList(BuildContext context, AsyncSnapshot snapshot, GetTestLists
             return new ListTile(
               title: new Text('${data['data'][index ~/2]['TECH_NAME']}',style: new TextStyle(fontStyle: FontStyle.italic,fontSize: 18.0)),
               onTap: () =>Navigator.of(context).push(new MaterialPageRoute(builder:(BuildContext context) =>new GetQuestions(testId: '${data['data'][index ~/2]['TEST_ID']}',techId: widget.techId,courseId: widget.courseId,))),
-              leading: new CircleAvatar(
-
-                backgroundColor: Colors.red,
-                child: createfab('${data['data'][index ~/2]['TEST_NAME'].toString()}',index),
-              ),
+              leading:createLeading(data,index)
             );
           }
       ),
@@ -70,14 +66,22 @@ Widget createTechList(BuildContext context, AsyncSnapshot snapshot, GetTestLists
   }
   return new Text('Error');
 }
+Widget createLeading(Map data, [int index]){
+    Random random=new Random();
+    int result=random.nextInt(255-10)+10;
+    return  new CircleAvatar(
+      radius: 30.0,
+      /*backgroundColor: Color.fromARGB(result, result+30, result<145?120:145-result, result<120?120:result+120),*/
+      backgroundColor: Colors.pink,
+      child: createfab('${data['data'][index ~/2]['TEST_NAME'].toString()}',index),
+    );
+}
 
 Widget createfab(String data, int index) {
-
-
-    print('0 ${data.substring(0,1)}');
-    print('1 ${data.substring(data.length-1)}');
-  return new Text('${data.substring(0,1)}'+'${data.substring(data.length-1)}',style:  new TextStyle(
-    color: Colors.white
+  
+  return new Text('${data.substring(0,1)}'+'${data.split(" ").removeAt(1)}',style:  new TextStyle(
+    color: Colors.white,
+    fontSize: 18.0
   ),);
 }
 

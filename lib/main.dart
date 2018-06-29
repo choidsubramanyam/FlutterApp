@@ -4,16 +4,24 @@ import 'package:firs_flutter_app/ui/GetTechnologies.dart';
 import 'package:flutter/material.dart';
 import 'dart:async';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:path/path.dart';
 import 'package:connectivity/connectivity.dart';
 import './ui/RegistrationPage.dart';
+import './ui/SplashScreen.dart';
+void main() {
 
-void main() => runApp(new MyApp());
+
+  return runApp(new MyApp());
+}
+
 
 class MyApp extends StatelessWidget {
+
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
+
     return new MaterialApp(
       title: 'Login',
       theme: new ThemeData(
@@ -21,7 +29,8 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.blue,
       ),
      // home: new MyHomePage(title: 'Login Page'),
-      home: new RegistrationPage(),
+
+      home: new SplashScreenView(),
 
     );
   }
@@ -42,6 +51,14 @@ class _MyHomePageState extends State<MyHomePage> {
 
   final TextEditingController _passwordController=new TextEditingController();
 
+  final _userNameFocus= new FocusNode();
+
+  final _passwordFocus =new FocusNode();
+
+  final _formKey= GlobalKey<FormState>();
+
+  final _scaKey= GlobalKey<ScaffoldState>();
+
   var status;
 
   StreamSubscription<ConnectivityResult> subscription;
@@ -59,11 +76,6 @@ class _MyHomePageState extends State<MyHomePage> {
         });
 
       });
-
-
-
-
-
     });
     super.initState();
 
@@ -78,99 +90,127 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
 
-    String number,password;
-
     return new WillPopScope(
       onWillPop: _requestPop,
       child: new Scaffold(
+        key: _scaKey,
         appBar: new AppBar(
           title:  Text(widget.title),
           centerTitle: true,
         ),
         body: new ListView(
           children: <Widget>[
-            new Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: <Widget>[
-                  internet(context, status),
-                  new Container(
+            Form(
+              key:_formKey,
+              child: new Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                    internet(context, status),
+                    new Container(
+                      child: new Column(
+                        children: <Widget>[
+                          new Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: new TextFormField(
+                                controller: usernameController,
+                                focusNode: _userNameFocus,
+                                onFieldSubmitted: (text){
+                                  usernameController.text=text;
+                                  FocusScope.of(context).requestFocus(_passwordFocus);
+                                },
+                                validator: (mobile){
+                                  if(mobile.length<10){
+                                    return 'Enter Valid Mobile Number';
+                                  }
+                                },
+                                autovalidate: _userNameFocus.hasFocus?true:false,
 
-                    child: new Column(
-                      children: <Widget>[
-                        new Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: new TextField(
-                              onSubmitted: (text){
-                                usernameController.text=text;
+                                keyboardType: TextInputType.number,
+                                maxLength: 10,
+                                decoration: new InputDecoration(
+                                    border: new OutlineInputBorder(
+                                     // borderRadius: new BorderRadius.all(new Radius.circular(16.0))
+                                    ),
+                                    labelText: "Mobile Number",
+                                    hintText: "Ex : 8184870282",
+                                    prefixIcon: new Icon(
+                                        Icons.person
+                                    ),
+                                )
+                            ),
+                          ),
+                          new Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: new TextFormField(
+                                controller: _passwordController,
+                                focusNode: _passwordFocus,
+                                validator: (pwd){
+                                  if(pwd.length<=2){
+                                    return 'Please Enter Valid Password';
+                                  }
+                                },
+                                autovalidate: _passwordFocus.hasFocus?true:false,
+                                obscureText: true,
+                                decoration: new InputDecoration(
+                                    border: new OutlineInputBorder(
+                                      //  borderRadius: new BorderRadius.all(new Radius.circular(16.0))
+                                    ),
+                                    labelText: "Password",
+                                    hintText: "",
+                                    prefixIcon: new Icon(
+                                        Icons.lock
+                                    )
+                                )
+                            ),
+                          ),
+                          new Container(
+                            width: 380.0,
+                            padding: const EdgeInsets.all(8.0),
+                            child: new RaisedButton(
+                              padding: const EdgeInsets.all(16.0),
+                              splashColor: Colors.white,
+                              shape: new RoundedRectangleBorder(borderRadius: new BorderRadius.all(new Radius.circular(8.0))),
+                              color: Colors.red,
+                              onPressed: () {
+                                iniConnecctivity().then((value)async {
+                                  if(value!='ConnectivityResult.none'){
+                                    if(_formKey.currentState.validate()) {
+                                      bool value = await _click(context, usernameController.text,
+                                          _passwordController.text);
+                                      if(value){
+                                        Navigator.pop(context);
+                                        Navigator.pushReplacement(context,new MaterialPageRoute(builder: (BuildContext context) => new GetTechnologiesList(title: "Technologies List",)));
+                                      }else{
+                                        showDialog(context: context,builder: (BuildContext context) => alertDialog(context, "Invalid Details"));
+                                      }
+                                    }else{
+                                      _scaKey.currentState.showSnackBar(SnackBar(content: Text("Enter Valid Details")));
+                                    }
+                                  }else{
+                                    showDialog(context:context,builder: (BuildContext context) => alertDialog(context, "No Interent"));
+                                  }
+                                });
+                               
                               },
-                              controller: usernameController,
-                              keyboardType: TextInputType.number,
-                              maxLength: 10,
-                              decoration: new InputDecoration(
-                                  border: new OutlineInputBorder(
-                                   // borderRadius: new BorderRadius.all(new Radius.circular(16.0))
-                                  ),
-                                  labelText: "Mobile Number",
-                                  hintText: "Ex : 8184870282",
-                                  prefixIcon: new Icon(
-                                      Icons.person
-                                  ),
-                              )
-                          ),
-                        ),
-                        new Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: new TextField(
-
-                              controller: _passwordController,
-                              obscureText: true,
-                              decoration: new InputDecoration(
-                                  border: new OutlineInputBorder(
-                                    //  borderRadius: new BorderRadius.all(new Radius.circular(16.0))
-                                  ),
-                                  labelText: "Password",
-                                  hintText: "",
-                                  prefixIcon: new Icon(
-                                      Icons.lock
-                                  )
-                              )
-                          ),
-                        ),
-                        new Container(
-                          width: 380.0,
-                          padding: const EdgeInsets.all(8.0),
-                          child: new RaisedButton(
-                            padding: const EdgeInsets.all(16.0),
-                            splashColor: Colors.white,
-                            shape: new RoundedRectangleBorder(borderRadius: new BorderRadius.all(new Radius.circular(8.0))),
-                            color: Colors.red,
-                            onPressed: () {
-                             /* Navigator.push(context,new MaterialPageRoute(builder: (BuildContext context) => new RegistrationPage()));*/
-                              _click(context,usernameController.text,_passwordController.text);
-                              /* number=usernameController.text;
-                               password=_passwordController.text;
-
-                               showDialog(context: context,builder: (BuildContext context) => _dialog() ,barrierDismissible: false);*/
-                            },
-                            child: const Text("LOGIN",style: const TextStyle(
-                              color: Colors.white
-                            ),),
-                          ),
-                        )
-                      ],
-                    ),
-                  )
-              ],
+                              child: const Text("LOGIN",style: const TextStyle(
+                                color: Colors.white
+                              ),),
+                            ),
+                          )
+                        ],
+                      ),
+                    )
+                ],
+              ),
             ),
           ],
         )
-
         // This trailing comma makes auto-formatting nicer for build methods.
       ),
     );
   }
 
-  _click(BuildContext context,String number,String password) async {
+  Future<bool> _click(BuildContext context,String number,String password) async {
     showDialog(context: context,builder: (BuildContext context) => _dialog() ,barrierDismissible: false);
     Map request=new Map();
     request['action']='login_user';
@@ -180,10 +220,12 @@ class _MyHomePageState extends State<MyHomePage> {
     Map data= await _performLogin(request);
 
    if(data['response']=='success'){
-     goToListView(context);
+     saveData(data);
      print(data);
+     return true;
    }else{
      Navigator.pop(context);
+     return false;
    }
 
   }
@@ -212,8 +254,19 @@ class _MyHomePageState extends State<MyHomePage> {
     return new Future.value(true);
   }
 
-  goToListView(BuildContext context) {
-    Navigator.of(context).pushReplacement(new MaterialPageRoute(builder: (BuildContext context) => new GetTechnologiesList(title: "Technologies List",)));
+  goToListView()  {
+    Navigator.pushReplacement(_scaKey.currentContext,new MaterialPageRoute(builder: (BuildContext context) => new GetTechnologiesList(title: "Technologies List",)));
+    // Navigator.replace(context, oldRoute: context, newRoute: new MaterialPageRoute(builder: (BuildContext context) => new GetTechnologiesList(title: "Technologies List",)));
+  }
+
+  Future saveData(Map data) async {
+
+    SharedPreferences preferences=await SharedPreferences.getInstance();
+    preferences.setString("USER_NAME", data['data']['USER_NAME']);
+    preferences.setString("MOBILE", data['data']['MOBILE']);
+    preferences.setString("EMAIL", data['data']['EMAIL']);
+    preferences.setString("ID", data['data']['ID']);
+
   }
 }
 Widget internet(BuildContext context, String status)  {

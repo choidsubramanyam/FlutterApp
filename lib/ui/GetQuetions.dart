@@ -1,11 +1,12 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:collection';
+import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import './ListViewSample.dart';
-
+import './utils.dart';
 class GetQuestions extends StatefulWidget {
 
   final testId;
@@ -52,7 +53,9 @@ class _QuestionView extends State<GetQuestions> {
       appBar: new AppBar(
         title: Text(title),
       ),
+
       body: createView(widget.testId,widget.techId,widget.courseId),
+
     );
   }
 
@@ -62,6 +65,7 @@ class _QuestionView extends State<GetQuestions> {
     request['test_id']='$testId';
     request['course_id']='$courseId';
     request['tech_id']='$techId';
+    print(request);
     final response = await http.post("http://androindian.com/apps/quiz/api.php",body: json.encode(request));
     print(json.decode(response.body));
     return json.decode(response.body);
@@ -79,7 +83,8 @@ class _QuestionView extends State<GetQuestions> {
       });
 
     }else if(data!=null){
-      return showResultView?resultView():createQuestionView(data);
+
+      return showResultView?resultView(testId,courseId,techId):createQuestionView(data);
 
     }
     return  dialog();
@@ -87,72 +92,76 @@ class _QuestionView extends State<GetQuestions> {
   }
 
   Widget createQuestionView(Map data) {
-    return new Container(
-      child: new Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: new Column(
-          children: <Widget>[
-            new Text('Question ${index+1} : ${data['data'][index]['question']}',style: new TextStyle(
-              fontSize: 18.0,
-            ),),
+    return new ListView(
+      children: <Widget>[
+        new Container(
+          child: new Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: new Column(
+              children: <Widget>[
+                new Text('Question ${index+1} : ${data['data'][index]['question']}',style: new TextStyle(
+                  fontSize: 18.0,
+                ),),
 
-            new RadioListTile(
-              title: new Text('${data['data'][index]['A']}',style: new TextStyle(color: Colors.black),),
-              value: 'A',
-              groupValue: groupValue,
-              onChanged: handleRadioValueChanged,
-              selected: false,
-              activeColor: Colors.green,
+                new RadioListTile(
+                  title: new Text('${data['data'][index]['A']}',style: new TextStyle(color: Colors.black),),
+                  value: 'A',
+                  groupValue: groupValue,
+                  onChanged: handleRadioValueChanged,
+                  selected: false,
+                  activeColor: Colors.green,
+                ),
+                new RadioListTile(
+                  title: new Text('${data['data'][index]['B']}',style: new TextStyle(color: Colors.black),),
+                  value:'B',
+                  groupValue: groupValue,
+                  onChanged:handleRadioValueChanged,
+                  selected: true,
+                  activeColor: Colors.green,
+                ),
+                new RadioListTile(
+                  title: new Text('${data['data'][index]['C']}',style: new TextStyle(color: Colors.black),),
+                  value:'C',
+                  groupValue: groupValue,
+                  onChanged: handleRadioValueChanged,
+                  selected: true,
+                  activeColor: Colors.green,
+                ),
+                new RadioListTile(
+                  title: new Text('${data['data'][index]['D']}',style: new TextStyle(color: Colors.black),),
+                  value: 'D',
+                  groupValue: groupValue,
+                  onChanged: handleRadioValueChanged,
+                  selected: true,
+                  activeColor: Colors.green,
+                ),
+
+                new Padding(
+
+                  padding: const EdgeInsets.all(8.0),
+                  child: new Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: <Widget>[
+                      previousWidget(),
+
+
+                      new Padding(
+                        padding: const EdgeInsets.all(32.0),
+                        child: new InkWell(
+                          highlightColor: Colors.black,
+                          splashColor: Colors.red,
+                          onTap:() => next(),
+                          child: nextOrResult(),
+                        ),
+                      )
+                    ],
+                  ),
+                )
+              ],
             ),
-            new RadioListTile(
-              title: new Text('${data['data'][index]['B']}',style: new TextStyle(color: Colors.black),),
-              value:'B',
-              groupValue: groupValue,
-              onChanged:handleRadioValueChanged,
-              selected: true,
-              activeColor: Colors.green,
-            ),
-            new RadioListTile(
-              title: new Text('${data['data'][index]['C']}',style: new TextStyle(color: Colors.black),),
-              value:'C',
-              groupValue: groupValue,
-              onChanged: handleRadioValueChanged,
-              selected: true,
-              activeColor: Colors.green,
-            ),
-            new RadioListTile(
-              title: new Text('${data['data'][index]['D']}',style: new TextStyle(color: Colors.black),),
-              value: 'D',
-              groupValue: groupValue,
-              onChanged: handleRadioValueChanged,
-              selected: true,
-              activeColor: Colors.green,
-            ),
-
-            new Padding(
-
-              padding: const EdgeInsets.all(8.0),
-              child: new Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: <Widget>[
-                  previousWidget(),
-
-
-                  new Padding(
-                    padding: const EdgeInsets.all(32.0),
-                    child: new InkWell(
-                      highlightColor: Colors.black,
-                      splashColor: Colors.red,
-                      onTap:() => next(),
-                      child: nextOrResult(),
-                    ),
-                  )
-                ],
-              ),
-            )
-          ],
+          ) ,
         ),
-      ) ,
+      ],
     );
   }
 
@@ -181,6 +190,8 @@ class _QuestionView extends State<GetQuestions> {
   }
 
   Widget nextOrResult() {
+
+
     if(index==data['data'].length-1){
       return new RaisedButton(onPressed: () => showResult(),
         color: Colors.green,
@@ -202,7 +213,7 @@ class _QuestionView extends State<GetQuestions> {
   showResult() {
     attempted[index]=groupValue;
     for (int i=0;i<data['data'].length;i++){
-      resultsOfQns[i]=data['data'][i]['ANS'];
+      resultsOfQns[i]=data['data'][i]['ANS'].toString().toUpperCase();
       print('resultsOfQns $resultsOfQns');
       print('attempted $attempted');
       if(attempted[i]!=null&&attempted[i]==resultsOfQns[i]){
@@ -264,10 +275,9 @@ class _QuestionView extends State<GetQuestions> {
     );
   }
 
-  Widget resultView() {
+  Widget resultView(testId,courseId,techId) {
     bool pass=examResult;
-
-
+    saveResults(testId,courseId,techId,noOfRightAns);
     return new Column(
       children: <Widget>[
         new Center(
@@ -285,7 +295,7 @@ class _QuestionView extends State<GetQuestions> {
                 ),
               ),
               new Padding(padding: const EdgeInsets.all(32.0),
-                child: pass? new Text("You are succeded in the exam and sucessfully completed the level  good luck for next level",
+                child: pass? new Text("You are succeded in the exam and sucessfully completed the level, good luck for next level",
                   style: new TextStyle(
                     fontSize: 18.0
                   ),
@@ -301,12 +311,26 @@ class _QuestionView extends State<GetQuestions> {
                   fontSize: 16.0,
                 ),
               ),
-
             ],
           ),
         )
       ],
     );
+  }
+
+  Future<Map> saveResults(testId,courseId,techId,marks) async {
+    String id=await Utils.readString();
+    var request= new Map();
+    request['res']='$marks';
+    request['uid']='$id';
+    request['test_id']='$testId';
+    request['course_id']='$courseId';
+    request['tech_id']='$techId';
+    request['action']='put_saving_res';
+    print(json.encode(request));
+    final response = await http.post("http://androindian.com/apps/quiz/api.php",body: json.encode(request));
+    print(json.decode(response.body));
+    return json.decode(response.body);
   }
 
 }
