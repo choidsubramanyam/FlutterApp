@@ -10,6 +10,8 @@ import 'package:http/http.dart' as http;
   class GetTestLists  extends StatefulWidget {
   final techId;
   final courseId;
+
+  final ScrollController _scrollController = new ScrollController();
   GetTestLists({Key key,this.techId,this.courseId}) :super (key:key);
 
   @override
@@ -17,7 +19,13 @@ import 'package:http/http.dart' as http;
 }
 
 class _GetTestListState extends State<GetTestLists> {
+  var position=0.0;
 
+    @override
+  void initState() {
+    super.initState();
+    widget._scrollController.addListener(scroll);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -36,20 +44,30 @@ class _GetTestListState extends State<GetTestLists> {
       appBar: new AppBar(
         title: Text('Tests List'),
       ),
-      body: futureBuilder,
+      body:futureBuilder,
 
     );
+  }
+
+  void scroll() {
+      print(widget._scrollController.position);
+      position=widget._scrollController.offset;
+      if(position>210){
+        widget._scrollController.jumpTo(0.0);
+      }
+      print('p:$position');
   }
 }
 
 Widget createTechList(BuildContext context, AsyncSnapshot snapshot, GetTestLists widget) {
   if(snapshot.hasData){
     Map data= snapshot.data;
-
     return new Padding(
       padding: const EdgeInsets.only(top: 8.0),
       child: new ListView.builder(
           scrollDirection: Axis.vertical,
+          addAutomaticKeepAlives: true,
+          controller:widget._scrollController,
           itemCount:data['data']!=null?( data['data'].length * 2):0,
           itemBuilder: (BuildContext context, int index){
             if(index.isOdd){
@@ -95,3 +113,5 @@ Future<Map> getTests(techId,courseId) async{
   return json.decode(response.body);
 
 }
+
+

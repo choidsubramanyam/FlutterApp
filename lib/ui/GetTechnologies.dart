@@ -37,7 +37,7 @@ class _TechnologiesList extends State<GetTechnologiesList>{
       appBar: new AppBar(
         title: Text(widget.title),
         actions: <Widget>[
-          new IconButton(icon: new Icon(Icons.power_settings_new,color: Colors.white,), onPressed: () => logOut())
+          new IconButton(icon: new Icon(Icons.power_settings_new,color: Colors.white),tooltip: 'Logout', onPressed: () => logOut)
         ],
       ),
       body: futureBuilder ,

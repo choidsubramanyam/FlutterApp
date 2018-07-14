@@ -213,13 +213,13 @@ class RegistrationViewState extends State<RegistrationView> {
                 ),
               ),
               new Container(
-                width: 380.0,
+                width: double.maxFinite,
                 padding: const EdgeInsets.all(8.0),
                 child: new RaisedButton(
                   splashColor: Colors.white,
                   padding: const EdgeInsets.all(16.0),
                   shape: new RoundedRectangleBorder(borderRadius: new BorderRadius.all(new Radius.circular(8.0))),
-                  color: Colors.red,
+                  color: Colors.indigo,
                   onPressed: () async {
                       iniConnecctivity().then((value){
                         if(value != 'ConnectivityResult.none'){
@@ -247,13 +247,13 @@ class RegistrationViewState extends State<RegistrationView> {
                 ),
               ),
               new Container(
-                width: 380.0,
+                width: double.infinity,
                 padding: const EdgeInsets.all(8.0),
                 child: new RaisedButton(
                   splashColor: Colors.white,
                   padding: const EdgeInsets.all(16.0),
                   shape: new RoundedRectangleBorder(borderRadius: new BorderRadius.all(new Radius.circular(8.0))),
-                  color: Colors.red,
+                  color: Colors.indigo,
                   onPressed: () async {
                     goToLogin();
                   },
@@ -278,7 +278,7 @@ class RegistrationViewState extends State<RegistrationView> {
   }
 
   goToLogin()async {
-    bool reload= await Navigator.of(context).pushReplacement(new MaterialPageRoute(builder: (BuildContext context) => new MyHomePage(title: "Login",)));
+    bool reload= await Navigator.of(context).push(new MaterialPageRoute(builder: (BuildContext context) => new MyHomePage(title: "Login",)));
     if(reload==null){
       print(reload);
       initState();

@@ -1,8 +1,5 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:collection';
-import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import './ListViewSample.dart';
@@ -28,7 +25,7 @@ class _QuestionView extends State<GetQuestions> {
   int index=0;
   List<String> attempted ;
   List<String> resultsOfQns;
-  int noOfRightAns=0;
+  double noOfRightAns=0.0;
   String title='Questions';
   bool showResultView=false;
   bool examResult=false;
@@ -49,14 +46,15 @@ class _QuestionView extends State<GetQuestions> {
 
   @override
   Widget build(BuildContext context) {
-    return new Scaffold(
+    return new WillPopScope(child: new Scaffold(
       appBar: new AppBar(
         title: Text(title),
       ),
-
       body: createView(widget.testId,widget.techId,widget.courseId),
-
+    ),
+        onWillPop: requestPop
     );
+
   }
 
   Future<Map> loadQuestions(testId,techId,courseId) async {
@@ -277,7 +275,11 @@ class _QuestionView extends State<GetQuestions> {
 
   Widget resultView(testId,courseId,techId) {
     bool pass=examResult;
-    saveResults(testId,courseId,techId,noOfRightAns);
+    double marks=((noOfRightAns ) / resultsOfQns.length)*100;
+    print('mark ${marks.toStringAsFixed(2)}');
+    if(marks.roundToDouble()==100.00) {
+      saveResults(testId, courseId, techId, noOfRightAns);
+    }
     return new Column(
       children: <Widget>[
         new Center(
@@ -332,6 +334,32 @@ class _QuestionView extends State<GetQuestions> {
     print(json.decode(response.body));
     return json.decode(response.body);
   }
+
+
+  Future<bool> requestPop() {
+    showDialog(context: context,builder: (BuildContext context) => new AlertDialog(
+      title: Text("Cancel Quiz"),
+      contentPadding: EdgeInsets.all(16.0),
+      content: Text("Changes you have made will be cleared."),
+      actions: <Widget>[
+        new FlatButton(child: new Text("Ok"),
+          onPressed:() {
+            Navigator.of(context).pop();
+            Navigator.of(context).pop();
+
+          }
+        ),
+        new FlatButton(child: new Text("Cancel"),
+            onPressed:() {
+              Navigator.pop(context);
+            }
+        ),
+      ],
+    ));
+    return Future.value(false);
+
+  }
+
 
 }
 

@@ -12,7 +12,7 @@ import './ui/SplashScreen.dart';
 void main() {
 
 
-  return runApp(new MyApp());
+  return runApp( MyApp());
 }
 
 
@@ -26,7 +26,10 @@ class MyApp extends StatelessWidget {
       title: 'Login',
       theme: new ThemeData(
         textSelectionColor: Colors.black87,
-        primarySwatch: Colors.blue,
+        primarySwatch: Colors.indigo,
+        hintColor: Colors.black,
+        buttonColor: Colors.indigo,
+
       ),
      // home: new MyHomePage(title: 'Login Page'),
 
@@ -128,7 +131,9 @@ class _MyHomePageState extends State<MyHomePage> {
                                 keyboardType: TextInputType.number,
                                 maxLength: 10,
                                 decoration: new InputDecoration(
+
                                     border: new OutlineInputBorder(
+                                      borderSide: new BorderSide(color: Colors.indigo,width: 4.0)
                                      // borderRadius: new BorderRadius.all(new Radius.circular(16.0))
                                     ),
                                     labelText: "Mobile Number",
@@ -170,7 +175,7 @@ class _MyHomePageState extends State<MyHomePage> {
                               padding: const EdgeInsets.all(16.0),
                               splashColor: Colors.white,
                               shape: new RoundedRectangleBorder(borderRadius: new BorderRadius.all(new Radius.circular(8.0))),
-                              color: Colors.red,
+                              color: Colors.indigo,
                               onPressed: () {
                                 iniConnecctivity().then((value)async {
                                   if(value!='ConnectivityResult.none'){
@@ -250,7 +255,7 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   Future<bool> _requestPop() {
-
+    /*Navigator.pop(_scaKey.currentContext);*/
     return new Future.value(true);
   }
 
